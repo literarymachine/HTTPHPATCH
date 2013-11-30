@@ -1,0 +1,6 @@
+[submodule "lib/web.php"]
+	path = lib/web.php
+	url = git@github.com:literarymachine/web.php.git
+[submodule "lib/LibRDF"]
+	path = lib/LibRDF
+	url = git@github.com:literarymachine/LibRDF.git

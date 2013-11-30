@@ -6,6 +6,9 @@ Installation
     $ mkdir resource
     $ git init resource/
     $ chmod -R o+w resource/
+    $ cd resource/
+    $ git config user.name "HTTP PATCHer"
+    $ git config user.email "http.patcher@ex.org"
 
 Test
 ----
@@ -46,4 +49,6 @@ Test
     <http://localhost/HTTPHPATCH/resource/1#thing> <http://xmlns.com/foaf/0.1/familyName> "Griffin" .
     <http://localhost/HTTPHPATCH/resource/1#thing> <http://xmlns.com/foaf/0.1/givenName> "Peter" .
 
-
+    $ git log --pretty=oneline
+    84f90bf9ee0cfa6f232a6079b66a3ec78f562680 1
+    41a26a3e6451312a2c18af56d37e5d4400149122 1

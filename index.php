@@ -54,7 +54,7 @@ class ResourceController extends WebController {
 
   public function DELETE($id) {
 
-    $path = __DIR__ . "/../../public/resource/$id";
+    $path = REPO . $id;
     if (file_exists($path)) {
       unlink($path);
     } else {

@@ -13,7 +13,6 @@ class ResourceController extends WebController {
 
   public function PUT($id) {
 
-    $path = REPO . $id;
     $ntriples = file_get_contents("php://input");
     $ntriples_parser = new LibRDF_Parser('ntriples');
     $rdf_model = new LibRDF_Model(new LibRDF_Storage());
@@ -26,25 +25,47 @@ class ResourceController extends WebController {
       $this->_response->writeHead(400, array());
     }
 
+    $path_info = pathinfo(REPO.$id);
+    if (!array_key_exists('extension', $path_info)) {
+      $path_info['extension'] = 'nt';
+    }
+    $path = "{$path_info['dirname']}/{$path_info['filename']}.{$path_info['extension']}";
+
     $rdf_model->serializeStatementsToFile($rdf_serializer, $path);
-    $this->__commit(REPO, $id);
+    $this->__commit(
+      $path_info['dirname'],
+      "{$path_info['filename']}.{$path_info['extension']}",
+      "Add {$path_info['filename']}.{$path_info['extension']}"
+    );
     $this->_response->terminate();
 
   }
 
   public function PATCH($id) {
-    $path = REPO . $id;
+
+    $path_info = pathinfo(REPO.$id);
+    if (!array_key_exists('extension', $path_info)) {
+      $path_info['extension'] = 'nt';
+    }
+    $path = "{$path_info['dirname']}/{$path_info['filename']}.{$path_info['extension']}";
+
     if (file_exists($path)) {
       $diff_data = fopen("php://input", 'r');
       try {
         $this->__apply($diff_data, $path);
-        $this->_response->writeHead(204, array("Content-Location" => $id));
+        $this->_response->writeHead(204, array(
+          "Content-Location" => "{$path_info['filename']}.{$path_info['extension']}"
+        ));
       } catch (LibRDF_Error $e) {
         // Conflicting state
         $this->_response->writeHead(409, array());
         $this->_response->write($e->getMessage());
       }
-      $this->__commit(REPO, $id);
+      $this->__commit(
+        $path_info['dirname'],
+        "{$path_info['filename']}.{$path_info['extension']}",
+        "Update {$path_info['filename']}.{$path_info['extension']}"
+      );
     } else {
       // Resource not found
       $this->_response->writeHead(404, array());
@@ -54,7 +75,12 @@ class ResourceController extends WebController {
 
   public function DELETE($id) {
 
-    $path = REPO . $id;
+    $path_info = pathinfo(REPO.$id);
+    if (!array_key_exists('extension', $path_info)) {
+      $path_info['extension'] = 'nt';
+    }
+    $path = "{$path_info['dirname']}/{$path_info['filename']}.{$path_info['extension']}";
+
     if (file_exists($path)) {
       unlink($path);
     } else {
@@ -97,13 +123,13 @@ class ResourceController extends WebController {
 
   }
 
-  private function __commit($repo_dir, $file_name) {
+  private function __commit($repo_dir, $file_name, $commit_message) {
 
     $command = "cd $repo_dir"
       . " && git add $file_name"
       . " && git commit "
       . " --author='Author Name <email@address.com>'"
-      . " -m '$file_name'";
+      . " -m '$commit_message'";
     exec($command);
 
   }
